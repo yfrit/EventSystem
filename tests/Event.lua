@@ -1,31 +1,6 @@
---TODO criar um git de testes genéricos
---Faz algo similar ao busted (it, mocks, asserts)
+local Event = require("Event")
 
 local test = {}
-local function runTest(testName)
-    if not testName then
-        --running from console
-        for name in pairs(test) do
-            os.execute("lua .\\tests\\Event.lua " .. name)
-        end
-        return
-    end
-
-    --running from execute
-    if test[testName] then
-        local success, message = pcall(test[testName])
-        if success then
-            print("SUCCESS\t\t" .. testName)
-        else
-            print("FAIL\t\t" .. testName)
-            print("\t" .. message)
-        end
-    else
-        error("Attempt to run unexistent test '" .. testName .. "'")
-    end
-end
-
-local Event = require("Event")
 
 --register a listener for a simple event, broadcast the event, function is called
 function test.simpleEventListener()
@@ -189,4 +164,4 @@ function test.eventParameters()
     assert(param3=="SubEvent2", "Third parameter was not 'SubEvent2'.")
 end
 
-runTest(...)
+return test

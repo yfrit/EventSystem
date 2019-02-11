@@ -19,11 +19,11 @@ function Eventer:broadcast(...)
     Event.broadcast(...)
 end
 
-function Eventer:listen(event, method, ...)
+function Eventer:listen(event, method)
     local function methodWithSelf(...)
         method(self, ...)
     end
-    Event.listen(event, methodWithSelf, ...)
+    Event.listen(event, methodWithSelf)
 end
 
 return Eventer

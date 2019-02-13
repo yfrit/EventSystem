@@ -1,8 +1,5 @@
 --[[
     Static class for registering listeners and firing events.
-
-    TODO
-        remove empty tables when listeners are removed
 --]]
 local Utils = require("Utils.Utils")
 

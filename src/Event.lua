@@ -4,17 +4,15 @@
     TODO
         remove empty tables when listeners are removed
 --]]
+local Utils = require("Utils.Utils")
+
 local Event = {
     listeners = {}
 }
 
-local function isCallable(f)
-    return type(f)=="function" or getmetatable(f).__call
-end
-
 function Event.listen(event, method)
     assert(type(event)=="table", "Event must be inside a table.")
-    assert(isCallable(method), "Listener must be callable.")
+    assert(Utils.isCallable(method), "Listener must be callable.")
 
     --find listener table
     local lastListeners = Event.listeners
@@ -33,7 +31,7 @@ end
 
 function Event.unlisten(event, method)
     assert(type(event)=="table", "Event must be inside a table.")
-    assert(isCallable(method), "Listener must be callable.")
+    assert(Utils.isCallable(method), "Listener must be callable.")
 
     --find listener table
     local lastListeners = Event.listeners

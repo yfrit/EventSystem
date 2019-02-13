@@ -41,4 +41,27 @@ describe("Eventer", function()
 
         assert.spy(Event.listen).was_called_with({"Event"}, match.has_self(method, eventer))
     end)
+
+    it(":listenMany registers all events in a table with Event.listen", function()
+        spy.on(Event, "listen")
+
+        local eventer = Eventer:new()
+        local method1 = spy.new(function() end)
+        local method2 = spy.new(function() end)
+        local method3 = spy.new(function() end)
+        eventer:listenMany({
+            Event1 = {
+                SubEvent1 = method1
+            },
+            Event2 = {
+                SubEvent2 = method2,
+                SubEvent3 = method3
+            }
+        })
+
+        assert.spy(Event.listen).was_called(3)
+        assert.spy(Event.listen).was_called_with({"Event1", "SubEvent1"}, match.has_self(method1, eventer))
+        assert.spy(Event.listen).was_called_with({"Event2", "SubEvent2"}, match.has_self(method2, eventer))
+        assert.spy(Event.listen).was_called_with({"Event2", "SubEvent3"}, match.has_self(method3, eventer))
+    end)
 end)

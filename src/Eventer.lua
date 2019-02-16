@@ -3,7 +3,7 @@
     This makes it easier to create children classes that already have communication methods implemented.
 ]]
 local Utils = require("Utils.Utils")
-local Class = require("Class.Class")
+local Class = require("Utils.Class")
 local Event = require("Event")
 
 local Eventer = Class.new({

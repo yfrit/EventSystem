@@ -2,13 +2,14 @@
     Static class for registering listeners and firing events.
 --]]
 local Utils = require("Utils.Utils")
+local unpack = unpack
 
 local Event = {
     listeners = {}
 }
 
 function Event.listen(event, method)
-    assert(type(event)=="table", "Event must be inside a table.")
+    assert(type(event) == "table", "Event must be inside a table.")
     assert(Utils.isCallable(method), "Listener must be callable.")
 
     --find listener table
@@ -27,7 +28,7 @@ function Event.listen(event, method)
 end
 
 function Event.unlisten(event, method)
-    assert(type(event)=="table", "Event must be inside a table.")
+    assert(type(event) == "table", "Event must be inside a table.")
     assert(Utils.isCallable(method), "Listener must be callable.")
 
     --find listener table
@@ -46,16 +47,18 @@ function Event.unlisten(event, method)
         --event doesn't have a method table
         return
     end
-    for i=#methodTable,1,-1 do
-        if methodTable[i]==method then
+    for i = #methodTable, 1, -1 do
+        if methodTable[i] == method then
             --remove method from it
             table.remove(methodTable, i)
         end
     end
 end
 
-function Event.broadcast(...)
-    local event = {...}
+function Event.broadcast(specialEvent, ...)
+    local hideFirstEvent = specialEvent:sub(1, 2) == "__"
+
+    local event = {specialEvent, ...}
 
     local lastListeners = Event.listeners
 
@@ -63,7 +66,11 @@ function Event.broadcast(...)
     local methodTable = lastListeners.methods
     if methodTable then
         for _, method in ipairs(methodTable) do
-            method(...)
+            if hideFirstEvent then
+                method(...)
+            else
+                method(specialEvent, ...)
+            end
         end
     end
 
@@ -81,10 +88,56 @@ function Event.broadcast(...)
         methodTable = lastListeners.methods
         if methodTable then
             for _, method in ipairs(methodTable) do
-                method(...)
+                if hideFirstEvent then
+                    method(...)
+                else
+                    method(specialEvent, ...)
+                end
             end
         end
     end
+end
+
+function Event.listenRequest(event, method)
+    local requestEvent = {"__request", unpack(event)}
+    Event.listen(requestEvent, method)
+end
+
+function Event.request(...)
+    local currentCoroutine = coroutine.running()
+
+    --listen to response
+    local responseEvent = {"__response", ...}
+    local response
+    Event.listen(
+        responseEvent,
+        function(...)
+            --get full response, which includes events whe don't need
+            local fullResponse = {...}
+
+            --remove unneeded parameters and convert to table again
+            response = {unpack(fullResponse, #responseEvent)}
+
+            --resume coroutine if it is stopped
+            if coroutine.status(currentCoroutine) == "suspended" then
+                coroutine.resume(currentCoroutine)
+            end
+        end
+    )
+
+    --broadcast request to responders
+    Event.broadcast("__request", ...)
+
+    --yield until someone responds
+    if not response then
+        coroutine.yield()
+    end
+
+    return unpack(response)
+end
+
+function Event.respond(...)
+    Event.broadcast("__response", ...)
 end
 
 return Event

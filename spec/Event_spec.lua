@@ -1,4 +1,4 @@
-require("TestUtils")
+require("Utils.Tests")
 
 describe(
     "Event",

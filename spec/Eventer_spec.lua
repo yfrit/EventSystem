@@ -19,7 +19,13 @@ describe(
     function()
         local Event
         local Eventer
+        local Class
 
+        setup(
+            function()
+                Class = require("Utils.Class")
+            end
+        )
         before_each(
             function()
                 Event = mockRequire("Event")
@@ -165,6 +171,74 @@ describe(
                     {"Event2", "SubEvent3"},
                     match.has_self(method3, eventer)
                 )
+            end
+        )
+
+        it(
+            "child can use listener attribute to set instance listeners",
+            function()
+                spy.on(Eventer, "listenManyEvents")
+                spy.on(Eventer, "listenManyRequests")
+                local mockMethod = function()
+                end
+                local ChildClass =
+                    Class.new(
+                    {
+                        listeners = {
+                            events = {
+                                Event1 = {
+                                    SubEvent1 = mockMethod
+                                },
+                                Event2 = {
+                                    SubEvent2 = mockMethod,
+                                    SubEvent3 = mockMethod
+                                }
+                            },
+                            requests = {
+                                Event3 = {
+                                    SubEvent4 = mockMethod
+                                },
+                                Event4 = {
+                                    SubEvent5 = mockMethod,
+                                    SubEvent6 = mockMethod
+                                }
+                            }
+                        }
+                    },
+                    function(self)
+                    end,
+                    Eventer
+                )
+
+                local instance = ChildClass:new()
+
+                assert.spy(Eventer.listenManyEvents).was_called_with(
+                    instance,
+                    {
+                        Event1 = {
+                            SubEvent1 = mockMethod
+                        },
+                        Event2 = {
+                            SubEvent2 = mockMethod,
+                            SubEvent3 = mockMethod
+                        }
+                    }
+                )
+                assert.spy(Eventer.listenManyRequests).was_called_with(
+                    instance,
+                    {
+                        Event3 = {
+                            SubEvent4 = mockMethod
+                        },
+                        Event4 = {
+                            SubEvent5 = mockMethod,
+                            SubEvent6 = mockMethod
+                        }
+                    }
+                )
+
+                Eventer.listenManyEvents:revert()
+                Eventer.listenManyRequests:revert()
             end
         )
     end

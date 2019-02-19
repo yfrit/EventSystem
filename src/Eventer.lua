@@ -10,6 +10,14 @@ local Eventer =
     Class.new(
     {},
     function(self)
+        if self.listeners then
+            if self.listeners.events then
+                self:listenManyEvents(self.listeners.events)
+            end
+            if self.listeners.requests then
+                self:listenManyRequests(self.listeners.requests)
+            end
+        end
     end
 )
 

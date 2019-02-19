@@ -42,7 +42,7 @@ describe(
                 )
 
                 Event.listenEvent({"SimpleEvent"}, listenerFunction)
-                Event.unlisten({"SimpleEvent"}, listenerFunction)
+                Event.unlistenEvent({"SimpleEvent"}, listenerFunction)
                 Event.broadcast("SimpleEvent")
 
                 assert.spy(listenerFunction).was_not_called()
@@ -77,7 +77,7 @@ describe(
 
                 Event.listenEvent({"SimpleEvent"}, listenerFunction)
                 Event.listenEvent({"SimpleEvent"}, listenerFunction)
-                Event.unlisten({"SimpleEvent"}, listenerFunction)
+                Event.unlistenEvent({"SimpleEvent"}, listenerFunction)
                 Event.broadcast("SimpleEvent")
 
                 assert.spy(listenerFunction).was_not_called()

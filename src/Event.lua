@@ -27,7 +27,7 @@ function Event.listenEvent(event, method)
     table.insert(lastListeners.methods, method)
 end
 
-function Event.unlisten(event, method)
+function Event.unlistenEvent(event, method)
     assert(type(event) == "table", "Event must be inside a table.")
     assert(Utils.isCallable(method), "Listener must be callable.")
 

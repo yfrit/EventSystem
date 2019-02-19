@@ -6,36 +6,58 @@ local Utils = require("Utils.Utils")
 local Class = require("Utils.Class")
 local Event = require("Event")
 
-local Eventer = Class.new({
-    --static things
-
-},
-function(self)
-    
-end)
+local Eventer =
+    Class.new(
+    {},
+    function(self)
+    end
+)
 
 function Eventer:broadcast(...)
     Event.broadcast(...)
 end
 
-function Eventer:listen(event, method)
+function Eventer:listenEvent(event, method)
     local function methodWithSelf(...)
         method(self, ...)
     end
-    Event.listen(event, methodWithSelf)
+    Event.listenEvent(event, methodWithSelf)
 end
 
-function Eventer:listenMany(listeners, prefix)
+function Eventer:listenRequest(event, method)
+    local function methodWithSelf(...)
+        method(self, ...)
+    end
+    Event.listenRequest(event, methodWithSelf)
+end
+
+function Eventer:listenManyEvents(listeners, prefix)
     prefix = prefix or {}
     local index = #prefix + 1
     for event, value in pairs(listeners) do
         prefix[index] = event
         if Utils.isCallable(value) then
             --callable, register listener
-            self:listen(prefix, value)
+            self:listenEvent(prefix, value)
         else
             --sub event table, continue recursively
-            self:listenMany(value, prefix)
+            self:listenManyEvents(value, prefix)
+        end
+    end
+    prefix[index] = nil
+end
+
+function Eventer:listenManyRequests(listeners, prefix)
+    prefix = prefix or {}
+    local index = #prefix + 1
+    for event, value in pairs(listeners) do
+        prefix[index] = event
+        if Utils.isCallable(value) then
+            --callable, register listener
+            self:listenRequest(prefix, value)
+        else
+            --sub event table, continue recursively
+            self:listenManyRequests(value, prefix)
         end
     end
     prefix[index] = nil

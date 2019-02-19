@@ -8,7 +8,7 @@ local Event = {
     listeners = {}
 }
 
-function Event.listen(event, method)
+function Event.listenEvent(event, method)
     assert(type(event) == "table", "Event must be inside a table.")
     assert(Utils.isCallable(method), "Listener must be callable.")
 
@@ -100,16 +100,16 @@ end
 
 function Event.listenRequest(event, method)
     local requestEvent = {"__request", unpack(event)}
-    Event.listen(requestEvent, method)
+    Event.listenEvent(requestEvent, method)
 end
 
 function Event.request(...)
     local currentCoroutine = coroutine.running()
 
-    --listen to response
+    --listenEvent to response
     local responseEvent = {"__response", ...}
     local response
-    Event.listen(
+    Event.listenEvent(
         responseEvent,
         function(...)
             --get full response, which includes events whe don't need

@@ -25,7 +25,7 @@ describe(
                     end
                 )
 
-                Event.listen({"SimpleEvent"}, listenerFunction)
+                Event.listenEvent({"SimpleEvent"}, listenerFunction)
                 Event.broadcast("SimpleEvent")
 
                 assert.spy(listenerFunction).was_called()
@@ -41,7 +41,7 @@ describe(
                     end
                 )
 
-                Event.listen({"SimpleEvent"}, listenerFunction)
+                Event.listenEvent({"SimpleEvent"}, listenerFunction)
                 Event.unlisten({"SimpleEvent"}, listenerFunction)
                 Event.broadcast("SimpleEvent")
 
@@ -58,8 +58,8 @@ describe(
                     end
                 )
 
-                Event.listen({"SimpleEvent"}, listenerFunction)
-                Event.listen({"SimpleEvent"}, listenerFunction)
+                Event.listenEvent({"SimpleEvent"}, listenerFunction)
+                Event.listenEvent({"SimpleEvent"}, listenerFunction)
                 Event.broadcast("SimpleEvent")
 
                 assert.spy(listenerFunction).was_called(2)
@@ -75,8 +75,8 @@ describe(
                     end
                 )
 
-                Event.listen({"SimpleEvent"}, listenerFunction)
-                Event.listen({"SimpleEvent"}, listenerFunction)
+                Event.listenEvent({"SimpleEvent"}, listenerFunction)
+                Event.listenEvent({"SimpleEvent"}, listenerFunction)
                 Event.unlisten({"SimpleEvent"}, listenerFunction)
                 Event.broadcast("SimpleEvent")
 
@@ -93,7 +93,7 @@ describe(
                     end
                 )
 
-                Event.listen({"CompositeEvent"}, listenerFunction)
+                Event.listenEvent({"CompositeEvent"}, listenerFunction)
                 Event.broadcast("CompositeEvent", "SubEvent")
 
                 assert.spy(listenerFunction).was_called()
@@ -109,7 +109,7 @@ describe(
                     end
                 )
 
-                Event.listen({"CompositeEvent", "SubEvent"}, listenerFunction)
+                Event.listenEvent({"CompositeEvent", "SubEvent"}, listenerFunction)
                 Event.broadcast("CompositeEvent", "SubEvent")
 
                 assert.spy(listenerFunction).was_called()
@@ -125,7 +125,7 @@ describe(
                     end
                 )
 
-                Event.listen({"CompositeEvent", "SubEvent"}, listenerFunction)
+                Event.listenEvent({"CompositeEvent", "SubEvent"}, listenerFunction)
                 Event.broadcast("CompositeEvent", "AnotherSubEvent")
 
                 assert.spy(listenerFunction).was_not_called()
@@ -139,7 +139,7 @@ describe(
                 end
                 assert.has_error(
                     function()
-                        Event.listen("NonTableEvent", listenerFunction)
+                        Event.listenEvent("NonTableEvent", listenerFunction)
                     end
                 )
             end
@@ -151,7 +151,7 @@ describe(
                 local notAFunction = {}
                 assert.has_error(
                     function()
-                        Event.listen({"SimpleEvent"}, notAFunction)
+                        Event.listenEvent({"SimpleEvent"}, notAFunction)
                     end
                 )
             end
@@ -166,7 +166,7 @@ describe(
                     end
                 )
 
-                Event.listen({"CompositeEvent", "SubEvent"}, listenerFunction)
+                Event.listenEvent({"CompositeEvent", "SubEvent"}, listenerFunction)
                 Event.broadcast("CompositeEvent")
 
                 assert.spy(listenerFunction).was_not_called()
@@ -182,7 +182,7 @@ describe(
                     end
                 )
 
-                Event.listen({"Event", 1}, listenerFunction)
+                Event.listenEvent({"Event", 1}, listenerFunction)
                 Event.broadcast("Event")
 
                 assert.spy(listenerFunction).was_not_called()
@@ -198,7 +198,7 @@ describe(
                     end
                 )
 
-                Event.listen({}, listenerFunction)
+                Event.listenEvent({}, listenerFunction)
                 Event.broadcast("Event1")
                 Event.broadcast("Event2", "SubEvent1")
                 Event.broadcast("Event3", "SubEvent2", "SubEvent3")
@@ -216,7 +216,7 @@ describe(
                     end
                 )
 
-                Event.listen({"CompositeEvent"}, listenerFunction)
+                Event.listenEvent({"CompositeEvent"}, listenerFunction)
                 Event.broadcast("CompositeEvent", "SubEvent1", "SubEvent2")
 
                 assert.spy(listenerFunction).was_called_with("CompositeEvent", "SubEvent1", "SubEvent2")
@@ -268,7 +268,7 @@ describe(
                         )
 
                         --will resume when event "ResumeResponder" is broadcast
-                        Event.listen({"ResumeResponder"}, resumer)
+                        Event.listenEvent({"ResumeResponder"}, resumer)
                     end
                 )
                 Event.listenRequest({"Event"}, responderFunction)

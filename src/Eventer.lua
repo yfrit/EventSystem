@@ -4,7 +4,7 @@
 ]]
 local Utils = require("Utils.Utils")
 local Class = require("Utils.Class")
-local Event = require("Event")
+local Event = require("Event", ...)
 
 local Eventer =
     Class.new(

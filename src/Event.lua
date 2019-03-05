@@ -109,21 +109,22 @@ function Event.request(...)
     --listenEvent to response
     local responseEvent = {"__response", ...}
     local response
-    Event.listenEvent(
-        responseEvent,
-        function(...)
-            --get full response, which includes events whe don't need
-            local fullResponse = {...}
+    local function responselistener(...)
+        --stop waiting for responses
+        Event.unlistenEvent(responseEvent, responselistener)
 
-            --remove unneeded parameters and convert to table again
-            response = {unpack(fullResponse, #responseEvent)}
+        --get full response, which includes events whe don't need
+        local fullResponse = {...}
 
-            --resume coroutine if it is stopped
-            if coroutine.status(currentCoroutine) == "suspended" then
-                coroutine.resume(currentCoroutine)
-            end
+        --remove unneeded parameters and convert to table again
+        response = {unpack(fullResponse, #responseEvent)}
+
+        --resume coroutine if it is stopped
+        if coroutine.status(currentCoroutine) == "suspended" then
+            coroutine.resume(currentCoroutine)
         end
-    )
+    end
+    Event.listenEvent(responseEvent, responselistener)
 
     --broadcast request to responders
     Event.broadcast("__request", ...)

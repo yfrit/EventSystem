@@ -290,6 +290,36 @@ describe(
             end
         )
 
+        it(
+            "register a listener for a request event, request that event, respond it twice, should ignore second response",
+            function()
+                local responderFunction =
+                    spy.new(
+                    function(subEvent1, subEvent2)
+                        Event.respond(subEvent1, subEvent2, "correctReturn")
+                        Event.respond(subEvent1, subEvent2, "wrongReturn")
+                    end
+                )
+                Event.listenRequest({"Event", "SubEvent"}, responderFunction)
+
+                local co =
+                    coroutine.create(
+                    function()
+                        local return1 = Event.request("Event", "SubEvent")
+                        assert.is_equal(return1, "correctReturn")
+                    end
+                )
+
+                local ok, errorMessage = coroutine.resume(co)
+                if not ok then
+                    error(errorMessage)
+                end
+                assert.is_equal(coroutine.status(co), "dead")
+            end
+        )
+
+        --TODO respond request twice, second response should be ignored
+
         --generic response for specific requests
         --e.g. request("Event", "SubEvent"), respond("Event", "Answer")
     end

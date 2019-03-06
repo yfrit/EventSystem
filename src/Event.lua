@@ -5,7 +5,25 @@ local Utils = require("Utils.Utils")
 local unpack = unpack
 
 local Event = {
-    listeners = {} --TODO add a comment showing a structure example
+    listeners = {}
+    --[[ e.g.
+        listeners = {
+            events = {
+                ["CompositeEvent"] = {
+                    events = {
+                        ["SubEvent1"] = {
+                            methods = {listener1, listener2}
+                        },
+                        ["SubEvent2"] = {
+                            methods = {listener3}
+                        }
+                    },
+                    methods = {listener4}
+                }
+            },
+            methods = {listener5}
+        }
+    ]]
 }
 
 function Event.listenEvent(event, method)

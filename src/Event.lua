@@ -5,7 +5,7 @@ local Utils = require("Utils.Utils")
 local unpack = unpack
 
 local Event = {
-    listeners = {}
+    listeners = {} --TODO add a comment showing a structure example
 }
 
 function Event.listenEvent(event, method)
@@ -113,7 +113,7 @@ function Event.request(...)
         --stop waiting for responses
         Event.unlistenEvent(responseEvent, responselistener)
 
-        --get full response, which includes events whe don't need
+        --get full response, which includes events we don't need
         local fullResponse = {...}
 
         --remove unneeded parameters and convert to table again

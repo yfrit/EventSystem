@@ -73,10 +73,8 @@ function Event.unlistenEvent(event, method)
     end
 end
 
-function Event.broadcast(specialEvent, ...)
-    local hideFirstEvent = specialEvent:sub(1, 2) == "__"
-
-    local event = {specialEvent, ...}
+function Event.broadcast(...)
+    local event = {...}
 
     local lastListeners = Event.listeners
 
@@ -84,11 +82,7 @@ function Event.broadcast(specialEvent, ...)
     local methodTable = lastListeners.methods
     if methodTable then
         for _, method in ipairs(methodTable) do
-            if hideFirstEvent then
-                method(...)
-            else
-                method(specialEvent, ...)
-            end
+            method(...)
         end
     end
 
@@ -106,11 +100,7 @@ function Event.broadcast(specialEvent, ...)
         methodTable = lastListeners.methods
         if methodTable then
             for _, method in ipairs(methodTable) do
-                if hideFirstEvent then
-                    method(...)
-                else
-                    method(specialEvent, ...)
-                end
+                method(...)
             end
         end
     end
@@ -118,7 +108,12 @@ end
 
 function Event.listenRequest(event, method)
     local requestEvent = {"__request", unpack(event)}
-    Event.listenEvent(requestEvent, method)
+    Event.listenEvent(
+        requestEvent,
+        function(__request, ...)
+            method(...)
+        end
+    )
 end
 
 function Event.request(...)
@@ -135,7 +130,7 @@ function Event.request(...)
         local fullResponse = {...}
 
         --remove unneeded parameters and convert to table again
-        response = {unpack(fullResponse, #responseEvent)}
+        response = {unpack(fullResponse, #responseEvent + 1)}
 
         --resume coroutine if it is stopped
         if coroutine.status(currentCoroutine) == "suspended" then

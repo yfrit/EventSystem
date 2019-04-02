@@ -318,9 +318,20 @@ describe(
             end
         )
 
-        --TODO respond request twice, second response should be ignored
+        it(
+            "calling Event.request outside a coroutine errors with message: " ..
+                "'Event.request must be run inside a coroutine'",
+            function()
+                assert.has_error(
+                    function()
+                        Event.request("Event")
+                    end,
+                    "Event.request must be run inside a coroutine"
+                )
+            end
+        )
 
-        --generic response for specific requests
+        --TODO generic response for specific requests
         --e.g. request("Event", "SubEvent"), respond("Event", "Answer")
     end
 )

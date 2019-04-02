@@ -150,6 +150,7 @@ end
 
 function Event.request(...)
     local currentCoroutine = coroutine.running()
+    assert(currentCoroutine, "Event.request must be run inside a coroutine")
 
     --add __response to the start of the event
     local responseEvent = {"__response", ...}

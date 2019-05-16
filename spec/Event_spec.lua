@@ -140,7 +140,8 @@ describe(
                 assert.has_error(
                     function()
                         Event.listenEvent("NonTableEvent", listenerFunction)
-                    end
+                    end,
+                    "Event must be inside a table."
                 )
             end
         )
@@ -152,7 +153,8 @@ describe(
                 assert.has_error(
                     function()
                         Event.listenEvent({"SimpleEvent"}, notAFunction)
-                    end
+                    end,
+                    "Listener must be callable."
                 )
             end
         )
@@ -220,6 +222,33 @@ describe(
                 Event.broadcast("CompositeEvent", "SubEvent1", "SubEvent2")
 
                 assert.spy(listenerFunction).was_called_with("CompositeEvent", "SubEvent1", "SubEvent2")
+            end
+        )
+
+        it(
+            "register a listener for a non-table request event, should error",
+            function()
+                local function listenerFunction()
+                end
+                assert.has_error(
+                    function()
+                        Event.listenRequest("NonTableEvent", listenerFunction)
+                    end,
+                    "Event must be inside a table."
+                )
+            end
+        )
+
+        it(
+            "register a non-callable listener for a request event, should error",
+            function()
+                local notAFunction = {}
+                assert.has_error(
+                    function()
+                        Event.listenRequest({"SimpleEvent"}, notAFunction)
+                    end,
+                    "Listener must be callable."
+                )
             end
         )
 

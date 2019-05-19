@@ -5,7 +5,7 @@ local Utils = require("Utils.Utils")
 local unpack = unpack
 
 local Event = {
-    listeners = {}
+    listeners = {},
     --[[ e.g.
         listeners = {
             events = {
@@ -24,6 +24,7 @@ local Event = {
             methods = {listener5}
         }
     ]]
+    responderWrappers = {}
 }
 
 function Event.listenEvent(event, method)
@@ -141,14 +142,34 @@ function Event.listenRequest(event, method)
     --(this is done so that normal, request and response events don't get mixed together)
     local requestEvent = {"__request", unpack(event)}
 
-    --register listener for request
-    Event.listenEvent(
-        requestEvent,
-        function(__request, ...)
-            --wrap method to discard the first parameter, since we don't want to pass "__request" to the listener method
-            method(...)
+    --check if method already has a wrapper (if not, create one)
+    local methodWrapper = Event.responderWrappers[method]
+    if not methodWrapper then
+        --wrap method to discard the first parameter, since we don't want to pass "__request" to the listener method
+        methodWrapper = function(__request, ...)
+            local results = {method(...)}
+
+            --if method returned something, respond event automatically with the returns
+            if #results > 0 then
+                local response = {...}
+                for _, result in ipairs(results) do
+                    response[#response + 1] = result
+                end
+                Event.respond(unpack(response))
+            end
         end
-    )
+        Event.responderWrappers[method] = methodWrapper
+    end
+
+    --register listener for request
+    Event.listenEvent(requestEvent, methodWrapper)
+end
+
+function Event.unlistenRequest(event, method)
+    local requestEvent = {"__request", unpack(event)}
+    local methodWrapper = Event.responderWrappers[method]
+
+    Event.unlistenEvent(requestEvent, methodWrapper)
 end
 
 function Event.request(...)
@@ -175,7 +196,10 @@ function Event.request(...)
         --resume coroutine if it is stopped
         --(it won't be stopped if someone responds before the yield, i.e. directly in response to the request broadcast)
         if coroutine.status(currentCoroutine) == "suspended" then
-            coroutine.resume(currentCoroutine)
+            local ok, errorMessage = coroutine.resume(currentCoroutine)
+            if not ok then
+                error(errorMessage)
+            end
         end
     end
     Event.listenEvent(responseEvent, responselistener)

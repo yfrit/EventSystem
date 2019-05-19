@@ -385,6 +385,33 @@ describe(
             end
         )
 
+        it(
+            "register a listener for a request event, deregister the listener, request that event, coroutine is never resumed",
+            function()
+                local function responderFunction(subEvent1, subEvent2)
+                    Event.respond(subEvent1, subEvent2, "response")
+                end
+                Event.listenRequest({"Event", "SubEvent"}, responderFunction)
+                Event.unlistenRequest({"Event", "SubEvent"}, responderFunction)
+
+                local co =
+                    coroutine.create(
+                    function()
+                        Event.request("Event", "SubEvent")
+
+                        --since the request is never responded, this will not run
+                        error("Request listener was not deregistered.")
+                    end
+                )
+
+                local ok, errorMessage = coroutine.resume(co)
+                if not ok then
+                    error(errorMessage)
+                end
+                assert.is_equal(coroutine.status(co), "suspended")
+            end
+        )
+
         --TODO generic response for specific requests
         --e.g. request("Event", "SubEvent"), respond("Event", "Answer")
     end

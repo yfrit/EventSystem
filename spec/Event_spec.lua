@@ -320,6 +320,31 @@ describe(
         )
 
         it(
+            "register a listener for a request event that returns the response, request that event, should work",
+            function()
+                local function responderFunction(subEvent1, subEvent2)
+                    return "return1", "return2"
+                end
+                Event.listenRequest({"Event", "SubEvent"}, responderFunction)
+
+                local co =
+                    coroutine.create(
+                    function()
+                        local return1, return2 = Event.request("Event", "SubEvent")
+                        assert.is_equal(return1, "return1")
+                        assert.is_equal(return2, "return2")
+                    end
+                )
+
+                local ok, errorMessage = coroutine.resume(co)
+                if not ok then
+                    error(errorMessage)
+                end
+                assert.is_equal(coroutine.status(co), "dead")
+            end
+        )
+
+        it(
             "register a listener for a request event, request that event, respond it twice, should ignore second response",
             function()
                 local responderFunction =

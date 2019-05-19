@@ -146,7 +146,16 @@ function Event.listenRequest(event, method)
         requestEvent,
         function(__request, ...)
             --wrap method to discard the first parameter, since we don't want to pass "__request" to the listener method
-            method(...)
+            local results = {method(...)}
+
+            --if method returned something, respond event automatically with the returns
+            if #results > 0 then
+                local response = {...}
+                for _, result in ipairs(results) do
+                    response[#response + 1] = result
+                end
+                Event.respond(unpack(response))
+            end
         end
     )
 end

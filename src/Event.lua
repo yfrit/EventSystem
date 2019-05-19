@@ -175,7 +175,10 @@ function Event.request(...)
         --resume coroutine if it is stopped
         --(it won't be stopped if someone responds before the yield, i.e. directly in response to the request broadcast)
         if coroutine.status(currentCoroutine) == "suspended" then
-            coroutine.resume(currentCoroutine)
+            local ok, errorMessage = coroutine.resume(currentCoroutine)
+            if not ok then
+                error(errorMessage)
+            end
         end
     end
     Event.listenEvent(responseEvent, responselistener)

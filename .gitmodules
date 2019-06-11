@@ -1,3 +1,0 @@
-[submodule "src/Utils"]
-	path = src/Utils
-	url = https://gitea.yfrit.com:2053/yfrit/Utils.git

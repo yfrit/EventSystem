@@ -1,0 +1,3 @@
+[submodule "Utils"]
+	path = Utils
+	url = https://gitea.yfrit.com:2053/yfrit/Utils.git

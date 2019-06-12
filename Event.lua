@@ -1,6 +1,7 @@
 --[[
     Static class for registering listeners and firing events.
 --]]
+require("Utils.init")
 local Utils = require("Utils.Utils")
 local unpack = unpack
 

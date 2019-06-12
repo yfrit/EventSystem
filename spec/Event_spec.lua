@@ -1,3 +1,4 @@
+require("Utils.init")
 require("Utils.Tests")
 
 describe(

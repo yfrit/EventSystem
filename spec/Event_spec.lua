@@ -1,5 +1,4 @@
-require("Utils.init")
-require("Utils.Tests")
+require("YfritLib.Tests")
 
 describe(
     "Event",

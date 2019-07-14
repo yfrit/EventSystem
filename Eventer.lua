@@ -2,9 +2,8 @@
     Wraps Event methods in a instantiable Class.
     This makes it easier to create children classes that already have communication methods implemented.
 ]]
-require("Utils.init")
-local Utils = require("Utils.Utils")
-local Class = require("Utils.Class")
+local Utils = require("YfritLib.Utils")
+local Class = require("YfritLib.Class")
 local Event = require("Event", ...)
 
 local Eventer =

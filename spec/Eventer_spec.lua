@@ -1,5 +1,4 @@
-require("Utils.init")
-require("Utils.Tests")
+require("YfritLib.Tests")
 
 assert:register(
     "matcher",
@@ -24,7 +23,7 @@ describe(
 
         setup(
             function()
-                Class = require("Utils.Class")
+                Class = require("YfritLib.Class")
             end
         )
         before_each(

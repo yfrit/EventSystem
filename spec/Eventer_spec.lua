@@ -1,3 +1,4 @@
+require("LocalRockInit")
 require("YfritLib.Tests")
 
 assert:register(

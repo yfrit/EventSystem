@@ -4,7 +4,7 @@
 ]]
 local Utils = require("YfritLib.Utils")
 local Class = require("YfritLib.Class")
-local Event = require("Event", ...)
+local Event = require("EventSystem.Event")
 
 local Eventer =
     Class.new(

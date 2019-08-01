@@ -15,6 +15,6 @@ build = {
    type = "builtin",
    modules = {
       ["EventSystem.Event"] = "Event.lua",
-      ["EventSystem.Eventer"] = "Eventer.lua",
+      ["EventSystem.EventListener"] = "EventListener.lua",
    }
 }

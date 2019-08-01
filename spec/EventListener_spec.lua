@@ -6,20 +6,23 @@ assert:register(
     "has_self",
     function(state, arguments)
         local method = arguments[1]
-        local eventer = arguments[2]
+        local eventListener = arguments[2]
         return function(methodWithSelf)
-            methodWithSelf()
-            assert.spy(method).was_called_with(eventer)
-            return true
+            return pcall(
+                function()
+                    methodWithSelf()
+                    assert.spy(method).was_called_with(eventListener)
+                end
+            )
         end
     end
 )
 
 describe(
-    "Eventer",
+    "EventListener",
     function()
         local Event
-        local Eventer
+        local EventListener
         local Class
 
         setup(
@@ -30,25 +33,13 @@ describe(
         before_each(
             function()
                 Event = mockRequire("Event")
-                Eventer = require("Eventer")
+                EventListener = require("EventListener")
             end
         )
         after_each(
             function()
                 unrequire("Event")
-                unrequire("Eventer")
-            end
-        )
-
-        it(
-            ":broadcast(...) calls Event.broadcast(...)",
-            function()
-                spy.on(Event, "broadcast")
-
-                local eventer = Eventer:new()
-                eventer:broadcast("SubEvent1", "SubEvent2", "SubEvent3")
-
-                assert.spy(Event.broadcast).was_called_with("SubEvent1", "SubEvent2", "SubEvent3")
+                unrequire("EventListener")
             end
         )
 
@@ -57,15 +48,15 @@ describe(
             function()
                 spy.on(Event, "listenEvent")
 
-                local eventer = Eventer:new()
+                local eventListener = EventListener:new()
                 local method =
                     spy.new(
                     function()
                     end
                 )
-                eventer:listenEvent({"Event"}, method)
+                eventListener:listenEvent({"Event"}, method)
 
-                assert.spy(Event.listenEvent).was_called_with({"Event"}, match.has_self(method, eventer))
+                assert.spy(Event.listenEvent).was_called_with({"Event"}, match.has_self(method, eventListener))
             end
         )
 
@@ -74,15 +65,15 @@ describe(
             function()
                 spy.on(Event, "listenRequest")
 
-                local eventer = Eventer:new()
+                local eventListener = EventListener:new()
                 local method =
                     spy.new(
                     function()
                     end
                 )
-                eventer:listenRequest({"Event"}, method)
+                eventListener:listenRequest({"Event"}, method)
 
-                assert.spy(Event.listenRequest).was_called_with({"Event"}, match.has_self(method, eventer))
+                assert.spy(Event.listenRequest).was_called_with({"Event"}, match.has_self(method, eventListener))
             end
         )
 
@@ -91,7 +82,7 @@ describe(
             function()
                 spy.on(Event, "listenEvent")
 
-                local eventer = Eventer:new()
+                local eventListener = EventListener:new()
                 local method1 =
                     spy.new(
                     function()
@@ -107,7 +98,7 @@ describe(
                     function()
                     end
                 )
-                eventer:listenManyEvents(
+                eventListener:listenManyEvents(
                     {
                         Event1 = {
                             SubEvent1 = method1
@@ -120,9 +111,18 @@ describe(
                 )
 
                 assert.spy(Event.listenEvent).was_called(3)
-                assert.spy(Event.listenEvent).was_called_with({"Event1", "SubEvent1"}, match.has_self(method1, eventer))
-                assert.spy(Event.listenEvent).was_called_with({"Event2", "SubEvent2"}, match.has_self(method2, eventer))
-                assert.spy(Event.listenEvent).was_called_with({"Event2", "SubEvent3"}, match.has_self(method3, eventer))
+                assert.spy(Event.listenEvent).was_called_with(
+                    {"Event1", "SubEvent1"},
+                    match.has_self(method1, eventListener)
+                )
+                assert.spy(Event.listenEvent).was_called_with(
+                    {"Event2", "SubEvent2"},
+                    match.has_self(method2, eventListener)
+                )
+                assert.spy(Event.listenEvent).was_called_with(
+                    {"Event2", "SubEvent3"},
+                    match.has_self(method3, eventListener)
+                )
             end
         )
 
@@ -131,7 +131,7 @@ describe(
             function()
                 spy.on(Event, "listenRequest")
 
-                local eventer = Eventer:new()
+                local eventListener = EventListener:new()
                 local method1 =
                     spy.new(
                     function()
@@ -147,7 +147,7 @@ describe(
                     function()
                     end
                 )
-                eventer:listenManyRequests(
+                eventListener:listenManyRequests(
                     {
                         Event1 = {
                             SubEvent1 = method1
@@ -162,84 +162,62 @@ describe(
                 assert.spy(Event.listenRequest).was_called(3)
                 assert.spy(Event.listenRequest).was_called_with(
                     {"Event1", "SubEvent1"},
-                    match.has_self(method1, eventer)
+                    match.has_self(method1, eventListener)
                 )
                 assert.spy(Event.listenRequest).was_called_with(
                     {"Event2", "SubEvent2"},
-                    match.has_self(method2, eventer)
+                    match.has_self(method2, eventListener)
                 )
                 assert.spy(Event.listenRequest).was_called_with(
                     {"Event2", "SubEvent3"},
-                    match.has_self(method3, eventer)
+                    match.has_self(method3, eventListener)
                 )
             end
         )
 
         it(
-            "child can use listener attribute to set instance listeners",
+            "#this child can use listener attribute to set instance listeners",
             function()
-                spy.on(Eventer, "listenManyEvents")
-                spy.on(Eventer, "listenManyRequests")
-                local mockMethod = function()
-                end
+                spy.on(Event, "listenEvent")
+                spy.on(Event, "listenRequest")
+
                 local ChildClass =
                     Class.new(
                     {
                         listeners = {
                             events = {
-                                Event1 = {
-                                    SubEvent1 = mockMethod
-                                },
-                                Event2 = {
-                                    SubEvent2 = mockMethod,
-                                    SubEvent3 = mockMethod
-                                }
+                                Event1 = "method1"
                             },
                             requests = {
-                                Event3 = {
-                                    SubEvent4 = mockMethod
-                                },
-                                Event4 = {
-                                    SubEvent5 = mockMethod,
-                                    SubEvent6 = mockMethod
-                                }
+                                Event2 = "method2"
                             }
                         }
                     },
                     function(self)
                     end,
-                    Eventer
+                    EventListener
+                )
+                ChildClass.method1 =
+                    spy.new(
+                    function()
+                    end
+                )
+                ChildClass.method2 =
+                    spy.new(
+                    function()
+                    end
                 )
 
                 local instance = ChildClass:new()
 
-                assert.spy(Eventer.listenManyEvents).was_called_with(
-                    instance,
-                    {
-                        Event1 = {
-                            SubEvent1 = mockMethod
-                        },
-                        Event2 = {
-                            SubEvent2 = mockMethod,
-                            SubEvent3 = mockMethod
-                        }
-                    }
-                )
-                assert.spy(Eventer.listenManyRequests).was_called_with(
-                    instance,
-                    {
-                        Event3 = {
-                            SubEvent4 = mockMethod
-                        },
-                        Event4 = {
-                            SubEvent5 = mockMethod,
-                            SubEvent6 = mockMethod
-                        }
-                    }
+                assert.spy(Event.listenEvent).was_called_with({"Event1"}, match.has_self(ChildClass.method1, instance))
+                assert.spy(Event.listenRequest).was_called_with(
+                    {"Event2"},
+                    match.has_self(ChildClass.method2, instance)
                 )
 
-                Eventer.listenManyEvents:revert()
-                Eventer.listenManyRequests:revert()
+                Event.listenEvent:revert()
+                Event.listenRequest:revert()
             end
         )
     end

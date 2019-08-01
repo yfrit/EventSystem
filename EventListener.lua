@@ -1,12 +1,12 @@
 --[[
-    Wraps Event methods in a instantiable Class.
+    Wraps Event listening methods into a instantiable Class.
     This makes it easier to create children classes that already have communication methods implemented.
 ]]
 local Utils = require("YfritLib.Utils")
 local Class = require("YfritLib.Class")
 local Event = require("EventSystem.Event")
 
-local Eventer =
+local EventListener =
     Class.new(
     {},
     function(self)
@@ -21,25 +21,25 @@ local Eventer =
     end
 )
 
-function Eventer:broadcast(...)
+function EventListener:broadcast(...)
     Event.broadcast(...)
 end
 
-function Eventer:listenEvent(event, method)
+function EventListener:listenEvent(event, method)
     local function methodWithSelf(...)
         method(self, ...)
     end
     Event.listenEvent(event, methodWithSelf)
 end
 
-function Eventer:listenRequest(event, method)
+function EventListener:listenRequest(event, method)
     local function methodWithSelf(...)
         method(self, ...)
     end
     Event.listenRequest(event, methodWithSelf)
 end
 
-function Eventer:listenManyEvents(listeners, prefix)
+function EventListener:listenManyEvents(listeners, prefix)
     prefix = prefix or {}
     local index = #prefix + 1
     for event, value in pairs(listeners) do
@@ -55,7 +55,7 @@ function Eventer:listenManyEvents(listeners, prefix)
     prefix[index] = nil
 end
 
-function Eventer:listenManyRequests(listeners, prefix)
+function EventListener:listenManyRequests(listeners, prefix)
     prefix = prefix or {}
     local index = #prefix + 1
     for event, value in pairs(listeners) do
@@ -71,4 +71,4 @@ function Eventer:listenManyRequests(listeners, prefix)
     prefix[index] = nil
 end
 
-return Eventer
+return EventListener

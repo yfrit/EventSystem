@@ -43,6 +43,9 @@ function EventListener:listenManyEvents(listeners, prefix)
         if Utils.isCallable(value) then
             --callable, register listener
             self:listenEvent(prefix, value)
+        elseif Utils.isCallable(self[value]) then
+            --method name, register listener
+            self:listenEvent(prefix, self[value])
         else
             --sub event table, continue recursively
             self:listenManyEvents(value, prefix)
@@ -59,6 +62,9 @@ function EventListener:listenManyRequests(listeners, prefix)
         if Utils.isCallable(value) then
             --callable, register listener
             self:listenRequest(prefix, value)
+        elseif Utils.isCallable(self[value]) then
+            --method name, register listener
+            self:listenRequest(prefix, self[value])
         else
             --sub event table, continue recursively
             self:listenManyRequests(value, prefix)

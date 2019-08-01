@@ -21,10 +21,6 @@ local EventListener =
     end
 )
 
-function EventListener:broadcast(...)
-    Event.broadcast(...)
-end
-
 function EventListener:listenEvent(event, method)
     local function methodWithSelf(...)
         method(self, ...)

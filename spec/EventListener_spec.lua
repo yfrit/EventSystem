@@ -41,18 +41,6 @@ describe(
         )
 
         it(
-            ":broadcast(...) calls Event.broadcast(...)",
-            function()
-                spy.on(Event, "broadcast")
-
-                local eventListener = EventListener:new()
-                eventListener:broadcast("SubEvent1", "SubEvent2", "SubEvent3")
-
-                assert.spy(Event.broadcast).was_called_with("SubEvent1", "SubEvent2", "SubEvent3")
-            end
-        )
-
-        it(
             ":listenEvent injects self into Event.listenEvent",
             function()
                 spy.on(Event, "listenEvent")

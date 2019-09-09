@@ -112,6 +112,7 @@ function Event.broadcast(...)
         iteration #1: {"CompositeEvent"}
         iteration #2: {"CompositeEvent", "SubEvent1"}
     ]]
+    local eventParameters = {...}
     for _, index in ipairs(event) do
         --go to next level
         --e.g. lastListeners = listeners["CompositeEvent"].events["SubEvent1"]
@@ -122,12 +123,17 @@ function Event.broadcast(...)
             break
         end
 
+        --remove parent event from parameters
+        --we don't want a listener for "CompositeEvent" receiving ("CompositeEvent", "SubEvent1")
+        --we only want it to receive "SubEvent1"
+        table.remove(eventParameters, 1)
+
         --call all listeners on this level
         --e.g. methodTable = listeners["CompositeEvent"].events["SubEvent1"].methods
         methodTable = lastListeners.methods
         if methodTable then
             for _, method in ipairs(methodTable) do
-                method(...)
+                method(unpack(eventParameters))
             end
         end
     end
@@ -146,15 +152,32 @@ function Event.listenRequest(event, method)
     local methodWrapper = Event.responderWrappers[method]
     if not methodWrapper then
         --wrap method to discard the first parameter, since we don't want to pass "__request" to the listener method
-        methodWrapper = function(__request, ...)
+        methodWrapper = function(...)
             local results = {method(...)}
 
             --if method returned something, respond event automatically with the returns
             if #results > 0 then
-                local response = {...}
+                --suppose we have a responder for event ("CompositeEvent", "SubEvent")
+                --that returns ("return1", "return2")
+                --and we request ("CompositeEvent", "SubEvent", "parameter1", "parameter2")
+                local response = {}
+
+                --this adds sub-events to response (e.g. "CompositeEvent", "SubEvent")
+                for _, subEvent in ipairs(event) do
+                    response[#response + 1] = subEvent
+                end
+
+                --this adds request parameters to response (e.g. "parameter1", "parameter2")
+                for _, requestParameter in ipairs({...}) do
+                    response[#response + 1] = requestParameter
+                end
+
+                --this adds results to response (e.g. "return1", "return2")
                 for _, result in ipairs(results) do
                     response[#response + 1] = result
                 end
+
+                --e.g Event.respond("CompositeEvent", "SubEvent", "parameter1", "parameter2", "return1", "return2")
                 Event.respond(unpack(response))
             end
         end
@@ -185,13 +208,8 @@ function Event.request(...)
         --stop waiting for responses
         Event.unlistenEvent(responseEvent, responselistener)
 
-        --get full response, which includes parameters we don't need
-        --e.g. fullResponse = {"__response", "CompositeRequest", "SubRequest1", "SubResponse1", "SubResponse2"}
-        local fullResponse = {...}
-
-        --remove unneeded parameters and convert to table again
-        --e.g. discard "__response", "CompositeRequest" and "SubRequest1", keeping only {"SubResponse1", "SubResponse2"}
-        response = {unpack(fullResponse, #responseEvent + 1)}
+        --store response (e.g. {"SubResponse1", "SubResponse2"})
+        response = {...}
 
         --resume coroutine if it is stopped
         --(it won't be stopped if someone responds before the yield, i.e. directly in response to the request broadcast)

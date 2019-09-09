@@ -211,7 +211,7 @@ describe(
         )
 
         it(
-            "listener receives events as parameters",
+            "listener receives sub-events as parameters",
             function()
                 local listenerFunction =
                     spy.new(
@@ -222,7 +222,7 @@ describe(
                 Event.listenEvent({"CompositeEvent"}, listenerFunction)
                 Event.broadcast("CompositeEvent", "SubEvent1", "SubEvent2")
 
-                assert.spy(listenerFunction).was_called_with("CompositeEvent", "SubEvent1", "SubEvent2")
+                assert.spy(listenerFunction).was_called_with("SubEvent1", "SubEvent2")
             end
         )
 
@@ -256,13 +256,12 @@ describe(
         it(
             "register a listener for a request event, request that event, should return responder response and have called it passing the event as parameter",
             function()
-                local responderFunction =
-                    spy.new(
-                    function(subEvent1, subEvent2)
-                        Event.respond(subEvent1, subEvent2, "return1", "return2")
+                Event.listenRequest(
+                    {"Event", "SubEvent"},
+                    function()
+                        Event.respond("Event", "SubEvent", "return1", "return2")
                     end
                 )
-                Event.listenRequest({"Event", "SubEvent"}, responderFunction)
 
                 local co =
                     coroutine.create(
@@ -270,8 +269,6 @@ describe(
                         local return1, return2 = Event.request("Event", "SubEvent")
                         assert.is_equal(return1, "return1")
                         assert.is_equal(return2, "return2")
-                        assert.spy(responderFunction).was_called()
-                        assert.spy(responderFunction).was_called_with("Event", "SubEvent")
                     end
                 )
 
@@ -286,14 +283,14 @@ describe(
         it(
             "register a asynchronous listener for a request event, request that event, should work",
             function()
-                local responderFunction =
-                    spy.new(
-                    function(event)
+                Event.listenRequest(
+                    {"Event"},
+                    function()
                         --simulate asynchronous listener by using a coroutine
                         local resumer =
                             coroutine.wrap(
                             function()
-                                Event.respond(event)
+                                Event.respond("Event")
                             end
                         )
 
@@ -301,7 +298,6 @@ describe(
                         Event.listenEvent({"ResumeResponder"}, resumer)
                     end
                 )
-                Event.listenRequest({"Event"}, responderFunction)
 
                 local co =
                     coroutine.create(
@@ -323,10 +319,12 @@ describe(
         it(
             "register a listener for a request event that returns the response, request that event, should work",
             function()
-                local function responderFunction(subEvent1, subEvent2)
-                    return "return1", "return2"
-                end
-                Event.listenRequest({"Event", "SubEvent"}, responderFunction)
+                Event.listenRequest(
+                    {"Event", "SubEvent"},
+                    function()
+                        return "return1", "return2"
+                    end
+                )
 
                 local co =
                     coroutine.create(
@@ -348,19 +346,18 @@ describe(
         it(
             "register a listener for a request event, request that event, respond it twice, should ignore second response",
             function()
-                local responderFunction =
-                    spy.new(
-                    function(subEvent1, subEvent2)
-                        Event.respond(subEvent1, subEvent2, "correctReturn")
-                        Event.respond(subEvent1, subEvent2, "wrongReturn")
+                Event.listenRequest(
+                    {"Event"},
+                    function()
+                        Event.respond("Event", "correctReturn")
+                        Event.respond("Event", "wrongReturn")
                     end
                 )
-                Event.listenRequest({"Event", "SubEvent"}, responderFunction)
 
                 local co =
                     coroutine.create(
                     function()
-                        local return1 = Event.request("Event", "SubEvent")
+                        local return1 = Event.request("Event")
                         assert.is_equal(return1, "correctReturn")
                     end
                 )

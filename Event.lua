@@ -151,7 +151,6 @@ function Event.listenRequest(event, method)
     --check if method already has a wrapper (if not, create one)
     local methodWrapper = Event.responderWrappers[method]
     if not methodWrapper then
-        --wrap method to discard the first parameter, since we don't want to pass "__request" to the listener method
         methodWrapper = function(...)
             local results = {method(...)}
 

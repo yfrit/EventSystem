@@ -30,7 +30,7 @@ end
 
 function EventListener:listenRequest(event, method)
     local function methodWithSelf(...)
-        method(self, ...)
+        return method(self, ...)
     end
     Event.listenRequest(event, methodWithSelf)
 end

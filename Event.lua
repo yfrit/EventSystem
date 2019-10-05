@@ -143,6 +143,8 @@ function Event.listenRequest(event, method)
     assert(type(event) == "table", "Event must be inside a table.")
     assert(Utils.isCallable(method), "Listener must be callable.")
 
+    event = Utils.shallowCopy(event)
+
     --add __request to the start of the event
     --e.g. {"CompositeRequest", "SubRequest1"} becomes {"__request", "CompositeRequest", "SubRequest1"}
     --(this is done so that normal, request and response events don't get mixed together)

@@ -1,5 +1,7 @@
 require("LocalRockInit")
 require("YfritLib.Tests")
+local Utils = require("YfritLib.Utils")
+local Class = require("YfritLib.Class")
 
 assert:register(
     "matcher",
@@ -18,18 +20,12 @@ assert:register(
     end
 )
 
-describe(
-    "EventListener",
+insulate(
+    "#EventListener",
     function()
         local Event
         local EventListener
-        local Class
 
-        setup(
-            function()
-                Class = require("YfritLib.Class")
-            end
-        )
         before_each(
             function()
                 Event = mockRequire("Event")
@@ -176,7 +172,7 @@ describe(
         )
 
         it(
-            "#this child can use listener attribute to set instance listeners",
+            "child can use listener attribute to set instance listeners",
             function()
                 spy.on(Event, "listenEvent")
                 spy.on(Event, "listenRequest")
@@ -218,6 +214,57 @@ describe(
 
                 Event.listenEvent:revert()
                 Event.listenRequest:revert()
+            end
+        )
+    end
+)
+
+insulate(
+    "#EventListener #integration",
+    function()
+        local Event, EventListener
+        setup(
+            function()
+                Event = require("Event")
+                EventListener = require("EventListener")
+            end
+        )
+        teardown(
+            function()
+            end
+        )
+        it(
+            "child can return the response to the request",
+            function()
+                local ChildClass =
+                    Class.new(
+                    {
+                        listeners = {
+                            requests = {
+                                RequestEvent = "method"
+                            }
+                        }
+                    },
+                    function()
+                    end,
+                    EventListener
+                )
+                function ChildClass:method()
+                    return true, 2, "banana"
+                end
+
+                ChildClass:new()
+                local result1, result2, result3
+                local co =
+                    Utils.executeAsCoroutine(
+                    function()
+                        result1, result2, result3 = Event.request("RequestEvent")
+                    end
+                )
+                assert.are_equal(coroutine.status(co), "dead")
+                assert.are_equal(result1, true)
+                assert.are_equal(result2, 2)
+                assert.are_equal(result3, "banana")
             end
         )
     end

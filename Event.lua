@@ -2,6 +2,7 @@
     Static class for registering listeners and firing events.
 --]]
 local Utils = require("YfritLib.Utils")
+local Promise = require("YfritLib.Promise")
 local unpack = unpack
 
 local Event = {
@@ -202,38 +203,25 @@ function Event.request(...)
 
     --add __response to the start of the event
     local responseEvent = {"__response", ...}
-    local response
+
+    --create a promise that will be completed when the response event occurs
+    local responsePromise = Promise:new()
 
     --create listener for the response event
     local function responselistener(...)
         --stop waiting for responses
         Event.unlistenEvent(responseEvent, responselistener)
 
-        --store response (e.g. {"SubResponse1", "SubResponse2"})
-        response = {...}
-
-        --resume coroutine if it is stopped
-        --(it won't be stopped if someone responds before the yield, i.e. directly in response to the request broadcast)
-        if coroutine.status(currentCoroutine) == "suspended" then
-            local ok, errorMessage = coroutine.resume(currentCoroutine)
-            if not ok then
-                error(errorMessage)
-            end
-        end
+        --complete promise with response
+        responsePromise:complete(...)
     end
     Event.listenEvent(responseEvent, responselistener)
 
     --broadcast request to responders
     Event.broadcast("__request", ...)
 
-    --if nobody responded yet (i.e. directly to the request broadcast), yield until someone responds
-    if not response then
-        coroutine.yield()
-    end
-
-    --unpack response before returning
-    --e.g. return "SubResponse1", "SubResponse2" (instead of {"SubResponse1", "SubResponse2"})
-    return unpack(response)
+    --return response (the same '...' that were passed to responsePromise:complete())
+    return responsePromise:await()
 end
 
 function Event.respond(...)

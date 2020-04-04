@@ -46,9 +46,11 @@ function EventListener:listenManyEvents(listeners, prefix)
         elseif Utils.isCallable(self[value]) then
             --method name, register listener
             self:listenEvent(prefix, self[value])
-        else
+        elseif type(value) == "table" then
             --sub event table, continue recursively
             self:listenManyEvents(value, prefix)
+        else
+            error(string.format("'%s' is not an implemented method.", tostring(value)))
         end
     end
     prefix[index] = nil
@@ -65,9 +67,11 @@ function EventListener:listenManyRequests(listeners, prefix)
         elseif Utils.isCallable(self[value]) then
             --method name, register listener
             self:listenRequest(prefix, self[value])
-        else
+        elseif type(value) == "table" then
             --sub event table, continue recursively
             self:listenManyRequests(value, prefix)
+        else
+            error(string.format("'%s' is not an implemented method.", tostring(value)))
         end
     end
     prefix[index] = nil

@@ -8,8 +8,10 @@ YfritLib: https://github.com/yfrit/yfritlib
 
 # How to install
 
-After installing the dependencies, run this in your project's Git folder:
+First, install the dependencies. Then if your project is a Git project, run this inside its folder:
 `git submodule add https://github.com/yfrit/EventSystem.git`
+If it is not a Git project, run this instead:
+`git clone https://github.com/yfrit/EventSystem.git`
 
 # Usages
 

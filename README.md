@@ -8,10 +8,19 @@ YfritLib: https://github.com/yfrit/yfritlib
 
 # How to install
 
+This project was once used as a LuaRocks module and it's probably possible to install it that way, but we no longer support it. Currently, we only support installing through Git, as following:
+
 First, install the dependencies. Then if your project is a Git project, run this inside its folder:
 `git submodule add https://github.com/yfrit/EventSystem.git`
 If it is not a Git project, run this instead:
 `git clone https://github.com/yfrit/EventSystem.git`
+
+Alternatively, to install through LuaRocks, you can try the following:
+```
+git clone https://github.com/yfrit/EventSystem.git
+cd EventSystem
+luarocks make
+```
 
 # Usages
 

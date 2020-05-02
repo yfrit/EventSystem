@@ -18,14 +18,6 @@ If it is not a Git project, run this instead:
 
 `git clone https://github.com/yfrit/EventSystem.git`
 
-
-Alternatively, to install through LuaRocks, you can try the following:
-```
-git clone https://github.com/yfrit/EventSystem.git
-cd EventSystem
-luarocks make
-```
-
 # Usages
 
 ## Broadcasting simple events

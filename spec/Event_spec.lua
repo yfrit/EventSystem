@@ -410,6 +410,22 @@ describe(
             end
         )
 
+        it(
+            "register a listener for the empty event, broadcast a non-empty event, function is called",
+            function()
+                local listenerFunction =
+                    spy.new(
+                    function()
+                    end
+                )
+
+                Event.listenEvent({}, listenerFunction)
+                Event.broadcast("SimpleEvent")
+
+                assert.spy(listenerFunction).was_called()
+            end
+        )
+
         --TODO generic response for specific requests
         --e.g. request("Event", "SubEvent"), respond("Event", "Answer")
     end

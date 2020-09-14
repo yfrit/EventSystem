@@ -4,11 +4,12 @@ require("YfritLib.Tests")
 describe(
     "Event",
     function()
-        local Event
+        local Event, Utils
 
         before_each(
             function()
                 Event = require("Event")
+                Utils = require("YfritLib.Utils")
             end
         )
         after_each(
@@ -423,6 +424,53 @@ describe(
                 Event.broadcast("SimpleEvent")
 
                 assert.spy(listenerFunction).was_called()
+            end
+        )
+
+        it(
+            "await WaitsUntilEventOccurs",
+            function()
+                local reached = false
+                Utils.executeAsCoroutine(
+                    function()
+                        Event.await("Event")
+                        reached = true
+                    end
+                )
+
+                Event.broadcast("Event")
+
+                assert.is_true(reached)
+            end
+        )
+        it(
+            "await FreezesIfEventNeverOccurs",
+            function()
+                local reached = false
+                Utils.executeAsCoroutine(
+                    function()
+                        Event.await("Event")
+                        reached = true
+                    end
+                )
+
+                assert.is_false(reached)
+            end
+        )
+        it(
+            "await GenericEvent WorksWithSpecificEvents",
+            function()
+                local reached = false
+                Utils.executeAsCoroutine(
+                    function()
+                        Event.await("Event")
+                        reached = true
+                    end
+                )
+
+                Event.broadcast("Event", "SubEvent")
+
+                assert.is_true(reached)
             end
         )
 

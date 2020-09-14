@@ -228,4 +228,20 @@ function Event.respond(...)
     Event.broadcast("__response", ...)
 end
 
+function Event.await(...)
+    local waitingPromise = Promise:new()
+    local event = {...}
+
+    -- start listening for event
+    local function listener()
+        -- when event occurs, clear listener and complete promise
+        Event.unlistenEvent(event, listener)
+        waitingPromise:complete()
+    end
+    Event.listenEvent(event, listener)
+
+    -- wait until promise is completed
+    waitingPromise:await()
+end
+
 return Event

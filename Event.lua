@@ -244,4 +244,28 @@ function Event.await(...)
     waitingPromise:await()
 end
 
+function Event.awaitMany(...)
+    local events = {...}
+    local eventsLeft = #events
+    local waitingPromise = Promise:new()
+
+    for _, event in ipairs(events) do
+        -- start listening for event
+        local function listener()
+            -- when event occurs, clear listener and decrement counter
+            Event.unlistenEvent(event, listener)
+            eventsLeft = eventsLeft - 1
+
+            -- if counter reached zero, all events occurred
+            if eventsLeft == 0 then
+                waitingPromise:complete()
+            end
+        end
+        Event.listenEvent(event, listener)
+    end
+
+    -- wait until promise is completed
+    waitingPromise:await()
+end
+
 return Event

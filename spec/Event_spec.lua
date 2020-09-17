@@ -474,6 +474,57 @@ describe(
             end
         )
 
+        it(
+            "awaitMany TwoEventsInOrder WaitsForEvents",
+            function()
+                local reached = false
+                Utils.executeAsCoroutine(
+                    function()
+                        Event.awaitMany({"EventA"}, {"EventB"})
+                        reached = true
+                    end
+                )
+
+                Event.broadcast("EventA")
+                Event.broadcast("EventB")
+
+                assert.is_true(reached)
+            end
+        )
+        it(
+            "awaitMany TwoEventsInReverse WaitsForEvents",
+            function()
+                local reached = false
+                Utils.executeAsCoroutine(
+                    function()
+                        Event.awaitMany({"EventA"}, {"EventB"})
+                        reached = true
+                    end
+                )
+
+                Event.broadcast("EventB")
+                Event.broadcast("EventA")
+
+                assert.is_true(reached)
+            end
+        )
+        it(
+            "awaitMany EventMissing WaitsForever",
+            function()
+                local reached = false
+                Utils.executeAsCoroutine(
+                    function()
+                        Event.awaitMany({"EventA"}, {"EventB"})
+                        reached = true
+                    end
+                )
+
+                Event.broadcast("EventA")
+
+                assert.is_false(reached)
+            end
+        )
+
         --TODO generic response for specific requests
         --e.g. request("Event", "SubEvent"), respond("Event", "Answer")
     end

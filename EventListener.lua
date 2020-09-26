@@ -4,12 +4,15 @@
 ]]
 local Utils = require("YfritLib.Utils")
 local Class = require("YfritLib.Class")
+local Table = require("YfritLib.Table")
 local Event = require("EventSystem.Event")
 
 local EventListener =
     Class.new(
     {},
     function(self)
+        self:_resetRegisteredListeners()
+
         if self.listeners then
             if self.listeners.events then
                 self:listenManyEvents(self.listeners.events)
@@ -26,6 +29,14 @@ function EventListener:listenEvent(event, method)
         method(self, ...)
     end
     Event.listenEvent(event, methodWithSelf)
+
+    table.insert(
+        self.registeredListeners.events,
+        {
+            event = Table.shallowCopy(event),
+            method = methodWithSelf
+        }
+    )
 end
 
 function EventListener:listenRequest(event, method)
@@ -33,6 +44,14 @@ function EventListener:listenRequest(event, method)
         return method(self, ...)
     end
     Event.listenRequest(event, methodWithSelf)
+
+    table.insert(
+        self.registeredListeners.requests,
+        {
+            event = Table.shallowCopy(event),
+            method = methodWithSelf
+        }
+    )
 end
 
 function EventListener:listenManyEvents(listeners, prefix)
@@ -75,6 +94,24 @@ function EventListener:listenManyRequests(listeners, prefix)
         end
     end
     prefix[index] = nil
+end
+
+function EventListener:destroy()
+    for _, listener in ipairs(self.registeredListeners.events) do
+        Event.unlistenEvent(listener.event, listener.method)
+    end
+    for _, listener in ipairs(self.registeredListeners.requests) do
+        Event.unlistenRequest(listener.event, listener.method)
+    end
+
+    self:_resetRegisteredListeners()
+end
+
+function EventListener:_resetRegisteredListeners()
+    self.registeredListeners = {
+        events = {},
+        requests = {}
+    }
 end
 
 return EventListener

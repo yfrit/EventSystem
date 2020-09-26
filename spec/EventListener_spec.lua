@@ -253,7 +253,12 @@ insulate(
                     return true, 2, "banana"
                 end
 
-                ChildClass:new()
+                local instance = ChildClass:new()
+                finally(
+                    function()
+                        instance:destroy()
+                    end
+                )
                 local result1, result2, result3
                 local co =
                     Utils.executeAsCoroutine(
@@ -265,6 +270,41 @@ insulate(
                 assert.are_equal(result1, true)
                 assert.are_equal(result2, 2)
                 assert.are_equal(result3, "banana")
+            end
+        )
+
+        it(
+            "#destroy clears request listeners",
+            function()
+                local ChildClass =
+                    Class.new(
+                    {
+                        listeners = {
+                            requests = {
+                                RequestEvent = "method"
+                            }
+                        }
+                    },
+                    function()
+                    end,
+                    EventListener
+                )
+                function ChildClass:method()
+                    return "banana"
+                end
+
+                local instance = ChildClass:new()
+                instance:destroy()
+
+                local result
+                local co =
+                    Utils.executeAsCoroutine(
+                    function()
+                        result = Event.request("RequestEvent")
+                    end
+                )
+                assert.are_equal(result, nil)
+                assert.are_equal(coroutine.status(co), "suspended")
             end
         )
     end

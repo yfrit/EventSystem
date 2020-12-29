@@ -3,6 +3,7 @@
 --]]
 local Utils = require("YfritLib.Utils")
 local Promise = require("YfritLib.Promise")
+local Table = require("YfritLib.Table")
 local unpack = unpack
 
 local Event = {
@@ -25,7 +26,8 @@ local Event = {
             methods = {listener5}
         }
     ]]
-    responderWrappers = {}
+    responderWrappers = {},
+    pendingRequests = {}
 }
 
 function Event.listenEvent(event, method)
@@ -179,8 +181,8 @@ function Event.listenRequest(event, method)
                     response[#response + 1] = result
                 end
 
-                --e.g Event.respond("CompositeEvent", "SubEvent", "parameter1", "parameter2", "return1", "return2")
-                Event.respond(unpack(response))
+                --e.g Event.legacyRespond("CompositeEvent", "SubEvent", "parameter1", "parameter2", "return1", "return2")
+                Event.legacyRespond(unpack(response))
             end
         end
         Event.responderWrappers[method] = methodWrapper
@@ -201,6 +203,8 @@ function Event.request(...)
     local currentCoroutine = coroutine.running()
     assert(currentCoroutine, "Event.request must be run inside a coroutine")
 
+    local event = {...}
+
     --add __response to the start of the event
     local responseEvent = {"__response", ...}
 
@@ -208,23 +212,71 @@ function Event.request(...)
     local responsePromise = Promise:new()
 
     --create listener for the response event
-    local function responselistener(...)
+    local function responseListener(...)
         --stop waiting for responses
-        Event.unlistenEvent(responseEvent, responselistener)
+        Event.unlistenEvent(responseEvent, responseListener)
+
+        --remove from pending requests
+        local _, index =
+            Table.find(
+            Event.pendingRequests,
+            function(pendingRequest)
+                return Table.areSame(pendingRequest.event, event)
+            end
+        )
+        if index then
+            table.remove(Event.pendingRequests, index)
+        else
+            print("WARNING: pending request not found.")
+        end
 
         --complete promise with response
         responsePromise:complete(...)
     end
-    Event.listenEvent(responseEvent, responselistener)
+    Event.listenEvent(responseEvent, responseListener)
 
     --broadcast request to responders
     Event.broadcast("__request", ...)
+
+    --store request to respond later
+    table.insert(
+        Event.pendingRequests,
+        {
+            event = event,
+            responseListener = responseListener
+        }
+    )
 
     --return response (the same '...' that were passed to responsePromise:complete())
     return responsePromise:await()
 end
 
 function Event.respond(...)
+    local event = {...}
+
+    -- find pending request
+    local request =
+        Table.find(
+        Event.pendingRequests,
+        function(pendingRequest)
+            return Table.isSubTableOf(event, pendingRequest.event)
+        end
+    )
+    if not request then
+        print("WARNING: attempt to respond inexistent request.")
+    end
+
+    local respondRequest = {}
+    function respondRequest.with(...)
+        if request then
+            request.responseListener(...)
+        end
+    end
+
+    return respondRequest
+end
+
+function Event.legacyRespond(...)
     Event.broadcast("__response", ...)
 end
 

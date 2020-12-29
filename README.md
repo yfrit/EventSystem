@@ -108,13 +108,6 @@ co()
 ```
 local Event = require("EventSystem.Event")
 
-Event.listenRequest(
-    {"GiveMeSomeWords"},
-    function()
-        Event.respond("GiveMeSomeWords", "potato", "hello")
-    end
-)
-
 -- Event.request must be run inside a coroutine
 local co =
     coroutine.wrap(
@@ -124,6 +117,8 @@ local co =
     end
 )
 co()
+
+Event.respond("GiveMeSomeWords").with("potato", "hello")
 -- prints "I got the words: potato hello"
 ```
 

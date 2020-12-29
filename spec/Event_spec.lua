@@ -260,7 +260,7 @@ describe(
                 Event.listenRequest(
                     {"Event", "SubEvent"},
                     function()
-                        Event.respond("Event", "SubEvent", "return1", "return2")
+                        Event.legacyRespond("Event", "SubEvent", "return1", "return2")
                     end
                 )
 
@@ -291,7 +291,7 @@ describe(
                         local resumer =
                             coroutine.wrap(
                             function()
-                                Event.respond("Event")
+                                Event.legacyRespond("Event")
                             end
                         )
 
@@ -350,8 +350,8 @@ describe(
                 Event.listenRequest(
                     {"Event"},
                     function()
-                        Event.respond("Event", "correctReturn")
-                        Event.respond("Event", "wrongReturn")
+                        Event.legacyRespond("Event", "correctReturn")
+                        Event.legacyRespond("Event", "wrongReturn")
                     end
                 )
 
@@ -388,7 +388,7 @@ describe(
             "register a listener for a request event, deregister the listener, request that event, coroutine is never resumed",
             function()
                 local function responderFunction(subEvent1, subEvent2)
-                    Event.respond(subEvent1, subEvent2, "response")
+                    Event.legacyRespond(subEvent1, subEvent2, "response")
                 end
                 Event.listenRequest({"Event", "SubEvent"}, responderFunction)
                 Event.unlistenRequest({"Event", "SubEvent"}, responderFunction)
@@ -491,21 +491,18 @@ describe(
                 assert.is_true(reached)
             end
         )
-        it(
+        asyncIt(
             "awaitMany TwoEventsInReverse WaitsForEvents",
             function()
-                local reached = false
                 Utils.executeAsCoroutine(
                     function()
                         Event.awaitMany({"EventA"}, {"EventB"})
-                        reached = true
+                        done()
                     end
                 )
 
                 Event.broadcast("EventB")
                 Event.broadcast("EventA")
-
-                assert.is_true(reached)
             end
         )
         it(
@@ -525,7 +522,38 @@ describe(
             end
         )
 
-        --TODO generic response for specific requests
-        --e.g. request("Event", "SubEvent"), respond("Event", "Answer")
+        asyncIt(
+            "respond WithSubEvent RespondsCorrectly",
+            function()
+                async(
+                    function()
+                        local response1, response2 = Event.request("RequestA", "RequestB")
+                        assert.are_equal(1, response1)
+                        assert.are_equal(2, response2)
+                        done()
+                    end
+                )
+
+                Event.respond("RequestA").with(1, 2)
+            end
+        )
+        it(
+            "respond WithIncorrectEvent NeverResponds",
+            function()
+                local responded = false
+                async(
+                    function()
+                        local response1, response2 = Event.request("RequestA", "RequestB")
+                        assert.are_equal(1, response1)
+                        assert.are_equal(2, response2)
+                        responded = true
+                    end
+                )
+
+                Event.respond("RequestB").with(1, 2)
+
+                assert.is_false(responded)
+            end
+        )
     end
 )

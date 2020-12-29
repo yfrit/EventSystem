@@ -227,16 +227,13 @@ function Event.request(...)
         if index then
             table.remove(Event.pendingRequests, index)
         else
-            print("WARNING: pending request not found.")
+            print("WARNING: pending request not found.", unpack(event))
         end
 
         --complete promise with response
         responsePromise:complete(...)
     end
     Event.listenEvent(responseEvent, responseListener)
-
-    --broadcast request to responders
-    Event.broadcast("__request", ...)
 
     --store request to respond later
     table.insert(
@@ -246,6 +243,9 @@ function Event.request(...)
             responseListener = responseListener
         }
     )
+
+    --broadcast request to responders
+    Event.broadcast("__request", ...)
 
     --return response (the same '...' that were passed to responsePromise:complete())
     return responsePromise:await()

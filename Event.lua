@@ -263,7 +263,7 @@ function Event.respond(...)
         end
     )
     if not request then
-        print("WARNING: attempt to respond inexistent request.")
+        print("WARNING: attempt to respond inexistent request.", debug.traceback())
     end
 
     local respondRequest = {}

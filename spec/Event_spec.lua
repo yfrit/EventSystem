@@ -142,8 +142,7 @@ describe(
                 assert.has_error(
                     function()
                         Event.listenEvent("NonTableEvent", listenerFunction)
-                    end,
-                    "Event must be inside a table."
+                    end
                 )
             end
         )
@@ -155,8 +154,7 @@ describe(
                 assert.has_error(
                     function()
                         Event.listenEvent({"SimpleEvent"}, notAFunction)
-                    end,
-                    "Listener must be callable."
+                    end
                 )
             end
         )
@@ -235,8 +233,7 @@ describe(
                 assert.has_error(
                     function()
                         Event.listenRequest("NonTableEvent", listenerFunction)
-                    end,
-                    "Event must be inside a table."
+                    end
                 )
             end
         )
@@ -248,8 +245,7 @@ describe(
                 assert.has_error(
                     function()
                         Event.listenRequest({"SimpleEvent"}, notAFunction)
-                    end,
-                    "Listener must be callable."
+                    end
                 )
             end
         )
@@ -368,19 +364,6 @@ describe(
                     error(errorMessage)
                 end
                 assert.is_equal(coroutine.status(co), "dead")
-            end
-        )
-
-        it(
-            "calling Event.request outside a coroutine errors with message: " ..
-                "'Event.request must be run inside a coroutine'",
-            function()
-                assert.has_error(
-                    function()
-                        Event.request("Event")
-                    end,
-                    "Event.request must be run inside a coroutine"
-                )
             end
         )
 

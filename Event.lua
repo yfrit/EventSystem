@@ -231,18 +231,22 @@ function Event.request(...)
             print("WARNING: pending request not found.", unpack(event))
         end
 
-        -- check if any interceptor wants to change the response
         local response = {...}
-        for _, interceptorCallback in ipairs(Event.interceptors) do
-            local shouldIntercept, newResponse = interceptorCallback(event, response)
-            if shouldIntercept then
-                response = newResponse
-                break
-            end
-        end
+        async(
+            function()
+                -- check if any interceptor wants to change the response
+                for _, interceptorCallback in ipairs(Event.interceptors) do
+                    local shouldIntercept, newResponse = interceptorCallback(event, response)
+                    if shouldIntercept then
+                        response = newResponse
+                        break
+                    end
+                end
 
-        --complete promise with response
-        responsePromise:complete(unpack(response))
+                --complete promise with response
+                responsePromise:complete(unpack(response))
+            end
+        )
     end
     Event.listenEvent(responseEvent, responseListener)
 

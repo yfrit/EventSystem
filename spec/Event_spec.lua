@@ -2,7 +2,7 @@ require("LocalRockInit")
 require("YfritLib.Tests")
 
 describe(
-    "Event",
+    "#Event",
     function()
         local Event, Utils
 
@@ -142,8 +142,7 @@ describe(
                 assert.has_error(
                     function()
                         Event.listenEvent("NonTableEvent", listenerFunction)
-                    end,
-                    "Event must be inside a table."
+                    end
                 )
             end
         )
@@ -155,8 +154,7 @@ describe(
                 assert.has_error(
                     function()
                         Event.listenEvent({"SimpleEvent"}, notAFunction)
-                    end,
-                    "Listener must be callable."
+                    end
                 )
             end
         )
@@ -235,8 +233,7 @@ describe(
                 assert.has_error(
                     function()
                         Event.listenRequest("NonTableEvent", listenerFunction)
-                    end,
-                    "Event must be inside a table."
+                    end
                 )
             end
         )
@@ -248,8 +245,7 @@ describe(
                 assert.has_error(
                     function()
                         Event.listenRequest({"SimpleEvent"}, notAFunction)
-                    end,
-                    "Listener must be callable."
+                    end
                 )
             end
         )
@@ -368,19 +364,6 @@ describe(
                     error(errorMessage)
                 end
                 assert.is_equal(coroutine.status(co), "dead")
-            end
-        )
-
-        it(
-            "calling Event.request outside a coroutine errors with message: " ..
-                "'Event.request must be run inside a coroutine'",
-            function()
-                assert.has_error(
-                    function()
-                        Event.request("Event")
-                    end,
-                    "Event.request must be run inside a coroutine"
-                )
             end
         )
 
@@ -553,6 +536,75 @@ describe(
                 Event.respond("RequestB").with(1, 2)
 
                 assert.is_false(responded)
+            end
+        )
+
+        asyncIt(
+            "registerInterceptor InterceptorReturnsTrue ResponseIsModified",
+            function()
+                async(
+                    function()
+                        local response = Event.request("request")
+                        assert.are_equal("interceptedResponse", response)
+                        done()
+                    end
+                )
+
+                Event.registerInterceptor(
+                    function(request, response)
+                        if request[1] == "request" and response[1] == "response" then
+                            return true, {"interceptedResponse"}
+                        end
+
+                        return false
+                    end
+                )
+
+                Event.respond("request").with("response")
+            end
+        )
+        asyncIt(
+            "registerInterceptor InterceptorReturnsFalse ResponseRemainsEqual",
+            function()
+                async(
+                    function()
+                        local response = Event.request("request")
+                        assert.are_equal("response", response)
+                        done()
+                    end
+                )
+
+                Event.registerInterceptor(
+                    function()
+                        return false
+                    end
+                )
+
+                Event.respond("request").with("response")
+            end
+        )
+        asyncIt(
+            "deregisterInterceptor _ ResponseRemainsEqual",
+            function()
+                async(
+                    function()
+                        local response = Event.request("request")
+                        assert.are_equal("response", response)
+                        done()
+                    end
+                )
+
+                local function interceptorCallback(request, response)
+                    if request[1] == "request" and response[1] == "response" then
+                        return true, {"interceptedResponse"}
+                    end
+
+                    return false
+                end
+                Event.registerInterceptor(interceptorCallback)
+                Event.deregisterInterceptor(interceptorCallback)
+
+                Event.respond("request").with("response")
             end
         )
     end

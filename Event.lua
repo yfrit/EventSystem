@@ -27,7 +27,8 @@ local Event = {
         }
     ]]
     responderWrappers = {},
-    pendingRequests = {}
+    pendingRequests = {},
+    interceptors = {}
 }
 
 function Event.listenEvent(event, method)
@@ -230,8 +231,22 @@ function Event.request(...)
             print("WARNING: pending request not found.", unpack(event))
         end
 
-        --complete promise with response
-        responsePromise:complete(...)
+        local response = {...}
+        async(
+            function()
+                -- check if any interceptor wants to change the response
+                for _, interceptorCallback in ipairs(Event.interceptors) do
+                    local shouldIntercept, newResponse = interceptorCallback(event, response)
+                    if shouldIntercept then
+                        response = newResponse
+                        break
+                    end
+                end
+
+                --complete promise with response
+                responsePromise:complete(unpack(response))
+            end
+        )
     end
     Event.listenEvent(responseEvent, responseListener)
 
@@ -318,6 +333,15 @@ function Event.awaitMany(...)
 
     -- wait until promise is completed
     waitingPromise:await()
+end
+
+function Event.registerInterceptor(interceptorCallback)
+    table.insert(Event.interceptors, interceptorCallback)
+end
+
+function Event.deregisterInterceptor(interceptorCallback)
+    local _, interceptorIndex = Table.findElement(Event.interceptors, interceptorCallback)
+    table.remove(Event.interceptors, interceptorIndex)
 end
 
 return Event

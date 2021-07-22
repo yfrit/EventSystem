@@ -607,5 +607,24 @@ describe(
                 Event.respond("request").with("response")
             end
         )
+
+        it(
+            "init _ CleansUpPreviousListeners",
+            function()
+                local reached = false
+                async(
+                    function()
+                        Event.request("RequestA")
+                        reached = true
+                    end
+                )
+
+                Event.init()
+
+                Event.respond("RequestA").with(true)
+
+                assert.is_false(reached)
+            end
+        )
     end
 )

@@ -6,8 +6,10 @@ local Promise = require("YfritLib.Promise")
 local Table = require("YfritLib.Table")
 local unpack = unpack
 
-local Event = {
-    listeners = {},
+local Event = {}
+
+function Event.init()
+    Event.listeners = {}
     --[[ e.g.
         listeners = {
             events = {
@@ -26,10 +28,11 @@ local Event = {
             methods = {listener5}
         }
     ]]
-    responderWrappers = {},
-    pendingRequests = {},
-    interceptors = {}
-}
+    Event.responderWrappers = {}
+    Event.pendingRequests = {}
+    Event.interceptors = {}
+end
+Event.init()
 
 function Event.listenEvent(event, method)
     assert(type(event) == "table", "Event must be inside a table.")

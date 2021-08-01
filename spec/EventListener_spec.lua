@@ -307,5 +307,80 @@ insulate(
                 assert.are_equal(coroutine.status(co), "suspended")
             end
         )
+
+        it(
+            "broadcast MultipleInstancesOfSameEventListeners TriggersEachOnce",
+            function()
+                local callArgs = {}
+
+                local ChildClass =
+                    Class.new(
+                    {},
+                    function(self)
+                        self:listenEvent({"Event"}, self._onEvent)
+                    end,
+                    EventListener
+                )
+
+                function ChildClass:_onEvent()
+                    callArgs[self] = true
+                end
+
+                local instance1 = ChildClass:new()
+                local instance2 = ChildClass:new()
+
+                Event.broadcast("Event")
+
+                assert.are_same(
+                    {
+                        [instance1] = true,
+                        [instance2] = true
+                    },
+                    callArgs
+                )
+            end
+        )
+        it(
+            "broadcast OverrideOnEventListener TriggersEachOnce",
+            function()
+                local callArgs = {}
+
+                local ChildClass =
+                    Class.new(
+                    {},
+                    function(self)
+                        self:listenEvent({"Event"}, self._onEvent)
+                    end,
+                    EventListener
+                )
+                function ChildClass:_onEvent()
+                    callArgs[self] = true
+                end
+
+                local GrandChildClass =
+                    Class.new(
+                    {},
+                    function(self)
+                    end,
+                    ChildClass
+                )
+                function GrandChildClass:_onEvent()
+                    callArgs[self] = true
+                end
+
+                local instance1 = ChildClass:new()
+                local instance2 = GrandChildClass:new()
+
+                Event.broadcast("Event")
+
+                assert.are_same(
+                    {
+                        [instance1] = true,
+                        [instance2] = true
+                    },
+                    callArgs
+                )
+            end
+        )
     end
 )

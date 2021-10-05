@@ -273,15 +273,9 @@ function Event.respond(...)
     local event = {...}
 
     -- find pending request
-    local request =
-        Table.find(
-        Event.pendingRequests,
-        function(pendingRequest)
-            return Table.isSubTableOf(event, pendingRequest.event)
-        end
-    )
+    local request = Event._getRequest(event)
     if not request then
-        print("WARNING: attempt to respond inexistent request.", debug.traceback())
+        print("WARNING: attempt to respond inexistent request.", debug.traceback(), ...)
     end
 
     local respondRequest = {}
@@ -345,6 +339,19 @@ end
 function Event.deregisterInterceptor(interceptorCallback)
     local _, interceptorIndex = Table.findElement(Event.interceptors, interceptorCallback)
     table.remove(Event.interceptors, interceptorIndex)
+end
+
+function Event.hasRequest(...)
+    return Event._getRequest({...}) and true or false
+end
+
+function Event._getRequest(event)
+    return Table.find(
+        Event.pendingRequests,
+        function(pendingRequest)
+            return Table.isSubTableOf(event, pendingRequest.event)
+        end
+    )
 end
 
 return Event

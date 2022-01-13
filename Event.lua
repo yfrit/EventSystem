@@ -61,7 +61,7 @@ end
 
 function Event.unlistenEvent(event, method)
     assert(type(event) == "table", "Event must be inside a table.")
-    assert(Utils.isCallable(method), "Listener must be callable.")
+    assert(Utils.isCallable(method), "Listener must be callable.\n" .. debug.traceback())
 
     --find listener table
     local lastListeners = Event.listeners
@@ -199,8 +199,9 @@ end
 function Event.unlistenRequest(event, method)
     local requestEvent = {"__request", unpack(event)}
     local methodWrapper = Event.responderWrappers[method]
-
-    Event.unlistenEvent(requestEvent, methodWrapper)
+    if methodWrapper then
+        Event.unlistenEvent(requestEvent, methodWrapper)
+    end
 end
 
 function Event.request(...)

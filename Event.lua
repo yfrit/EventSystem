@@ -94,7 +94,7 @@ function Event.unlistenEvent(event, method)
 end
 
 function Event.broadcast(...)
-    --calls all listener for the event and all its preffixes
+    --calls all listeners for the event and all its preffixes
     --e.g.if the event {"CompositeEvent", "SubEvent1"} is triggered
     --it should call all of its listeners, but also all of its preffixes
     --[[ so, it would call the listeners for:
@@ -110,7 +110,7 @@ function Event.broadcast(...)
     local methodTable = lastListeners.methods
     if methodTable then
         for _, method in ipairs(methodTable) do
-            method(...)
+            Event._safeCall(method, ...)
         end
     end
 
@@ -140,7 +140,7 @@ function Event.broadcast(...)
         methodTable = lastListeners.methods
         if methodTable then
             for _, method in ipairs(methodTable) do
-                method(unpack(eventParameters))
+                Event._safeCall(method, unpack(eventParameters))
             end
         end
     end
@@ -353,6 +353,13 @@ function Event._getRequest(event)
             return Table.isSubTableOf(event, pendingRequest.event)
         end
     )
+end
+
+function Event._safeCall(method, ...)
+    local ok, errorMessage = pcall(method, ...)
+    if not ok then
+        print("Listener call failed: ", errorMessage, debug.traceback())
+    end
 end
 
 return Event

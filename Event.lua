@@ -334,7 +334,12 @@ function Event.awaitMany(...)
 end
 
 function Event.registerInterceptor(interceptorCallback)
-    table.insert(Event.interceptors, interceptorCallback)
+    local _, interceptorIndex = Table.findElement(Event.interceptors, interceptorCallback)
+    if not interceptorIndex then
+        table.insert(Event.interceptors, interceptorCallback)
+    else
+        print("WARNING: trying to register already registered interceptor.", debug.traceback())
+    end
 end
 
 function Event.deregisterInterceptor(interceptorCallback)

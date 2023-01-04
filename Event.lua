@@ -61,7 +61,9 @@ end
 
 function Event.unlistenEvent(event, method)
     assert(type(event) == "table", "Event must be inside a table.")
-    assert(Utils.isCallable(method), "Listener must be callable.\n" .. debug.traceback())
+    if not Utils.isCallable(method) then
+        error("Listener must be callable.\n" .. debug.traceback())
+    end
 
     --find listener table
     local lastListeners = Event.listeners

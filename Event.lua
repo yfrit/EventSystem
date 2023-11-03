@@ -366,6 +366,7 @@ function Event._safeCall(method, ...)
     local ok, errorMessage = pcall(method, ...)
     if not ok then
         print("Listener call failed: ", errorMessage, debug.traceback())
+        Event.broadcast("Event", "errorOccurred", debug.traceback(errorMessage, 2))
     end
 end
 

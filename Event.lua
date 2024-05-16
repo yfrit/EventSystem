@@ -111,6 +111,7 @@ function Event.broadcast(...)
     --this calls the listeners for the empty event ({})
     local methodTable = lastListeners.methods
     if methodTable then
+        methodTable = Table.shallowCopy(methodTable)
         for _, method in ipairs(methodTable) do
             Event._safeCall(method, ...)
         end
@@ -141,6 +142,7 @@ function Event.broadcast(...)
         --e.g. methodTable = listeners["CompositeEvent"].events["SubEvent1"].methods
         methodTable = lastListeners.methods
         if methodTable then
+            methodTable = Table.shallowCopy(methodTable)
             for _, method in ipairs(methodTable) do
                 Event._safeCall(method, unpack(eventParameters))
             end

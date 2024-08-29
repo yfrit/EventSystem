@@ -11,14 +11,16 @@ local EventListener =
     Class.new(
     {},
     function(self)
-        self:_resetRegisteredListeners()
+        if not self.registeredListeners then
+            self:_resetRegisteredListeners()
 
-        if self.listeners then
-            if self.listeners.events then
-                self:listenManyEvents(self.listeners.events)
-            end
-            if self.listeners.requests then
-                self:listenManyRequests(self.listeners.requests)
+            if self.listeners then
+                if self.listeners.events then
+                    self:listenManyEvents(self.listeners.events)
+                end
+                if self.listeners.requests then
+                    self:listenManyRequests(self.listeners.requests)
+                end
             end
         end
     end

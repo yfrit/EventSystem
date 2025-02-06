@@ -205,6 +205,7 @@ function Event.unlistenRequest(event, method)
     local methodWrapper = Event.responderWrappers[method]
     if methodWrapper then
         Event.unlistenEvent(requestEvent, methodWrapper)
+        Event.responderWrappers[method] = nil
     end
 end
 

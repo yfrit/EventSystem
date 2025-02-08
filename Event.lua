@@ -34,6 +34,22 @@ function Event.init()
 end
 Event.init()
 
+function Event.saveState()
+    return {
+        listeners = Event.listeners,
+        responderWrappers = Event.responderWrappers,
+        pendingRequests = Event.pendingRequests,
+        interceptors = Event.interceptors
+    }
+end
+
+function Event.loadState(state)
+    Event.listeners = state.listeners
+    Event.responderWrappers = state.responderWrappers
+    Event.pendingRequests = state.pendingRequests
+    Event.interceptors = state.interceptors
+end
+
 function Event.listenEvent(event, method)
     assert(type(event) == "table", "Event must be inside a table.")
     assert(Utils.isCallable(method), "Listener must be callable.")

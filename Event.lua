@@ -319,15 +319,15 @@ function Event.await(...)
     local event = {...}
 
     -- start listening for event
-    local function listener()
+    local function listener(...)
         -- when event occurs, clear listener and complete promise
         Event.unlistenEvent(event, listener)
-        waitingPromise:complete()
+        waitingPromise:complete(...)
     end
     Event.listenEvent(event, listener)
 
     -- wait until promise is completed
-    waitingPromise:await()
+    return waitingPromise:await()
 end
 
 function Event.awaitMany(...)
